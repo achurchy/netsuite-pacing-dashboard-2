@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetSuite US Launch - Pacing Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f5f5; }
+        
+        /* Main Dashboard */
+        #dashboard { display: block; }
+        .header { background: #1a237e; color: white; padding: 20px 30px; }
+        .header h1 { font-size: 24px; margin-bottom: 5px; }
+        .header .last-updated { font-size: 14px; opacity: 0.8; }
+        
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; }
+        
+        /* Metrics Row */
+        .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 25px; }
+        .metric-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center; }
+        .metric-card .value { font-size: 32px; font-weight: bold; color: #1a237e; }
+        .metric-card .label { font-size: 14px; color: #666; margin-top: 5px; }
+        
+        /* Filters */
+        .filters-section { background: white; padding: 20px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .filters-section h3 { margin-bottom: 15px; color: #1a237e; }
+        .filters-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
+        .filter-group { }
+        .filter-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #333; }
+        .filter-group input[type="date"], .filter-group input[type="number"] { 
+            padding: 8px 12px; border: 1px solid #ddd; border-radius: 4px; width: 100%; 
+        }
+        .checkbox-group { display: flex; flex-wrap: wrap; gap: 8px; }
+        .checkbox-group label { display: flex; align-items: center; gap: 5px; font-weight: normal; cursor: pointer; 
+            padding: 4px 10px; background: #e8eaf6; border-radius: 4px; font-size: 13px; }
+        .checkbox-group input:checked + span { font-weight: 600; }
+        .toggle-row { display: flex; align-items: center; gap: 10px; margin-top: 10px; }
+        
+        /* Tables */
+        .table-section { background: white; padding: 20px; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .table-section h3 { margin-bottom: 15px; color: #1a237e; }
+        table { width: 100%; border-collapse: collapse; font-size: 14px; }
+        th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #f5f5f5; font-weight: 600; color: #333; position: sticky; top: 0; }
+        tr:hover { background: #fafafa; }
+        .totals-row { background: #1a237e !important; color: white; font-weight: bold; }
+        .totals-row:hover { background: #1a237e !important; }
+        
+        /* Status colors */
+        .status-completed { color: #2e7d32; }
+        .status-inprogress { color: #1565c0; }
+        .status-notstarted { color: #757575; }
+        
+        /* Days +/- colors */
+        .days-great { background: #c8e6c9; }
+        .days-good { background: #dcedc8; }
+        .days-ok { background: #fff9c4; }
+        .days-warning { background: #ffe0b2; }
+        .days-danger { background: #ffccbc; }
+        .days-critical { background: #ef9a9a; }
+
+        /* Status group column colors (lightened) */
+        .col-not-started { background: #f5f5f5; color: #757575; }
+        .col-blocked { background: #ffebee; color: #c62828; }
+        .col-dev-in-prog { background: #e3f2fd; color: #1565c0; }
+        .col-qa { background: #fffde7; color: #f57f17; }
+        .col-done { background: #e8f5e9; color: #2e7d32; }
+        .col-not-done { background: #fff3e0; color: #e65100; }
+        
+        /* Status Key */
+        .status-key { display: flex; flex-direction: column; gap: 8px; }
+        .status-key-item { font-size: 14px; padding: 6px 0; border-bottom: 1px solid #eee; }
+        .status-key-item:last-child { border-bottom: none; }
+
+        /* Initiative Filter */
+        .initiative-filters { max-height: 200px; overflow-y: auto; padding: 10px; background: #f9f9f9; border-radius: 6px; }
+        .initiative-checkbox { display: flex; align-items: center; gap: 8px; padding: 6px; cursor: pointer; }
+        .initiative-checkbox:hover { background: #e8eaf6; border-radius: 4px; }
+
+        /* Drilldown */
+        .drilldown-section { margin-top: 25px; border-top: 2px solid #e0e0e0; padding-top: 15px; }
+        .drilldown-section:first-child { border-top: none; margin-top: 0; }
+        .drilldown-section-header { color: #1a237e; font-size: 18px; margin: 0 0 15px 0; padding-bottom: 8px; border-bottom: 1px solid #c5cae9; }
+        .drilldown-item { margin-left: 0; }
+        .drilldown-initiative { background: #e8eaf6; padding: 10px 15px; margin-bottom: 5px; border-radius: 6px; cursor: pointer; font-weight: 600; }
+        .drilldown-initiative:hover { background: #c5cae9; }
+        .drilldown-initiative.completed { background: #c8e6c9; }
+        .drilldown-epic { background: #fff3e0; padding: 8px 15px; margin-left: 25px; margin-bottom: 3px; border-radius: 4px; cursor: pointer; }
+        .drilldown-epic:hover { background: #ffe0b2; }
+        .drilldown-epic.completed { background: #c8e6c9; }
+        .drilldown-ticket { padding: 6px 15px; margin-left: 50px; font-size: 13px; border-bottom: 1px solid #eee; }
+        .drilldown-ticket:last-child { border-bottom: none; }
+        .drilldown-ticket a { color: #1565c0; text-decoration: none; }
+        .drilldown-ticket a:hover { text-decoration: underline; }
+        .drilldown-children { display: none; }
+        .drilldown-children.expanded { display: block; }
+        .expand-icon { display: inline-block; width: 20px; }
+        .ticket-status { display: inline-block; min-width: 80px; font-size: 12px; padding: 2px 6px; border-radius: 3px; }
+        .status-done { background: #c8e6c9; color: #2e7d32; }
+        .status-inprog { background: #bbdefb; color: #1565c0; }
+        .status-notstarted { background: #eeeeee; color: #616161; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .metrics-row { grid-template-columns: repeat(2, 1fr); }
+            .filters-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Login Overlay */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #1a237e 0%, #283593 100%);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 9999;
+        }
+        .login-box {
+            background: white; padding: 40px; border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3); text-align: center;
+            max-width: 400px; width: 90%;
+        }
+        .login-box h2 { color: #1a237e; margin-bottom: 10px; font-size: 24px; }
+        .login-box p { color: #666; margin-bottom: 25px; font-size: 14px; }
+        .login-box input[type="password"] {
+            width: 100%; padding: 14px; border: 2px solid #e0e0e0;
+            border-radius: 6px; font-size: 16px; margin-bottom: 15px;
+            text-align: center; letter-spacing: 4px;
+        }
+        .login-box input[type="password"]:focus {
+            outline: none; border-color: #1a237e;
+        }
+        .login-box button {
+            width: 100%; padding: 14px; background: #1a237e; color: white;
+            border: none; border-radius: 6px; font-size: 16px;
+            cursor: pointer; font-weight: 600;
+        }
+        .login-box button:hover { background: #283593; }
+        .login-error { color: #c62828; font-size: 14px; margin-top: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <!-- Login Overlay -->
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>🔐 NetSuite Pacing Dashboard</h2>
+            <p>Enter password to access the dashboard</p>
+            <input type="password" id="login-password" placeholder="Password" autofocus>
+            <button onclick="checkPassword()">Access Dashboard</button>
+            <div class="login-error" id="login-error">Incorrect password. Please try again.</div>
+        </div>
+    </div>
+
+    <!-- Main Dashboard (hidden until authenticated) -->
+    <div id="dashboard" style="display: none;">
+        <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <h1>📊 NetSuite US Launch - Pacing Dashboard</h1>
+                    <div class="last-updated">Last updated: <span id="last-updated-time">--</span></div>
+                </div>
+                <a href="https://github.com/collectorsgroup/netsuite-pacing-dashboard/actions/workflows/update-dashboard.yml"
+                   target="_blank"
+                   style="background: rgba(255,255,255,0.2); color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; display: inline-flex; align-items: center; gap: 6px;"
+                   title="Trigger a manual data refresh via GitHub Actions">
+                    🔄 Refresh Data
+                </a>
+            </div>
+        </div>
+        
+        <div class="container">
+            <!-- Summary Metrics -->
+            <div class="metrics-row">
+                <div class="metric-card"><div class="value" id="total-issues">--</div><div class="label">Total Issues</div></div>
+                <div class="metric-card"><div class="value" id="completed-count">--</div><div class="label">Completed</div></div>
+                <div class="metric-card"><div class="value" id="remaining-count">--</div><div class="label">Remaining</div></div>
+                <div class="metric-card"><div class="value" id="pct-completed">--</div><div class="label">% Completed</div></div>
+                <div class="metric-card"><div class="value" id="duration-elapsed">--</div><div class="label">% Duration Elapsed</div></div>
+            </div>
+            
+            <!-- Filters -->
+            <div class="filters-section">
+                <h3>🔧 Global Filters</h3>
+                <div class="filters-grid">
+                    <div class="filter-group">
+                        <label>📅 Deadline</label>
+                        <input type="date" id="deadline-input" onchange="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label>⚠️ Risk Buffer %</label>
+                        <input type="number" id="risk-buffer" value="0" min="0" max="100" step="5" onchange="applyFilters()">
+                    </div>
+                    <div class="filter-group">
+                        <label>📝 Issue Types</label>
+                        <div class="checkbox-group" id="issue-type-filters"></div>
+                    </div>
+                    <div class="filter-group">
+                        <label>📊 Statuses</label>
+                        <div class="checkbox-group" id="status-filters"></div>
+                    </div>
+                </div>
+                <div class="toggle-row">
+                    <input type="checkbox" id="hide-completed" onchange="applyFilters()">
+                    <label for="hide-completed">Hide completed projects</label>
+                </div>
+
+                <!-- Initiative Filter and Status Key side by side -->
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 8px;">🎯 Initiatives</label>
+                        <div class="initiative-filters" id="initiative-filters"></div>
+                    </div>
+                    <div>
+                        <label style="font-weight: 600; display: block; margin-bottom: 8px;">📋 Status Key</label>
+                        <div class="status-key" style="background: #f9f9f9; padding: 10px; border-radius: 6px; max-height: 200px; overflow-y: auto;">
+                            <div class="status-key-item"><strong>⚪ Not Started:</strong> To Do, Scoping</div>
+                            <div class="status-key-item"><strong>🔴 Blocked:</strong> Blocked</div>
+                            <div class="status-key-item"><strong>🔵 Dev In Prog:</strong> In Progress, Code Review, Fix Required</div>
+                            <div class="status-key-item"><strong>🟡 QA:</strong> In QA, QA In Progress, Ready for QA</div>
+                            <div class="status-key-item"><strong>🟢 Done:</strong> DONE, Ready for Prod Release, Pending Deployment, Ready for Deploy/Push, PM Review, Ready for Review, Ready for UAT, Ready for Prod</div>
+                            <div class="status-key-item"><strong>⚫ Not Done:</strong> All non-completed statuses</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pace Metrics Table -->
+            <div class="table-section">
+                <h3>📈 Pace Metrics</h3>
+                <div style="overflow-x: auto;"><table id="pace-table"><thead></thead><tbody></tbody></table></div>
+            </div>
+
+            <!-- Burn Up Chart -->
+            <div class="table-section">
+                <h3>📈 Burn Up Chart</h3>
+                <div style="height: 400px;"><canvas id="burnup-chart"></canvas></div>
+            </div>
+
+            <!-- Work Completion Breakdown -->
+            <div class="table-section">
+                <h3>✅ Work Completion Breakdown</h3>
+                <div style="overflow-x: auto;"><table id="monthly-table"><thead></thead><tbody></tbody></table></div>
+            </div>
+
+            <!-- Drilldown View -->
+            <div class="table-section drilldown-section">
+                <h3>🔍 Initiative & Epic Drilldown</h3>
+                <div id="drilldown-container"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dashboard data (injected by Python)
+        const DASHBOARD_DATA = __DASHBOARD_DATA__;
+
+        // Password protection
+        const CORRECT_PASSWORD = '2026';
+
+        function checkPassword() {
+            const input = document.getElementById('login-password').value;
+            if (input === CORRECT_PASSWORD) {
+                sessionStorage.setItem('dashboard_auth', 'true');
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('dashboard').style.display = 'block';
+            } else {
+                document.getElementById('login-error').style.display = 'block';
+                document.getElementById('login-password').value = '';
+                document.getElementById('login-password').focus();
+            }
+        }
+
+        // Allow Enter key to submit password
+        document.getElementById('login-password').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') checkPassword();
+        });
+
+        // Check if already authenticated this session
+        if (sessionStorage.getItem('dashboard_auth') === 'true') {
+            document.getElementById('login-overlay').style.display = 'none';
+            document.getElementById('dashboard').style.display = 'block';
+        }
+
+        // Initialize dashboard on page load
+        document.addEventListener('DOMContentLoaded', initDashboard);
+
+        function initDashboard() {
+            // Set last updated time
+            const lastUpdated = new Date(DASHBOARD_DATA.lastUpdated);
+            document.getElementById('last-updated-time').textContent = lastUpdated.toLocaleString();
+
+            // Set deadline default
+            document.getElementById('deadline-input').value = DASHBOARD_DATA.endDate;
+
+            // Build issue type filters
+            const issueTypeContainer = document.getElementById('issue-type-filters');
+            DASHBOARD_DATA.issueTypes.forEach(type => {
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" checked data-issue-type="${type}" onchange="applyFilters()"><span>${type}</span>`;
+                issueTypeContainer.appendChild(label);
+            });
+
+            // Build status filters
+            const statusContainer = document.getElementById('status-filters');
+            DASHBOARD_DATA.statusGroups.forEach(status => {
+                const label = document.createElement('label');
+                label.innerHTML = `<input type="checkbox" checked data-status="${status}" onchange="applyFilters()"><span>${status}</span>`;
+                statusContainer.appendChild(label);
+            });
+
+            // Build initiative filters
+            const initiativeContainer = document.getElementById('initiative-filters');
+            if (DASHBOARD_DATA.initiatives && DASHBOARD_DATA.initiatives.length > 0) {
+                DASHBOARD_DATA.initiatives.forEach(init => {
+                    const div = document.createElement('div');
+                    div.className = 'initiative-checkbox';
+                    div.innerHTML = `<input type="checkbox" checked data-initiative="${init.key}" onchange="applyFilters()"><span>${init.summary} (${init.key})</span>`;
+                    initiativeContainer.appendChild(div);
+                });
+            } else {
+                initiativeContainer.innerHTML = '<p style="color:#666;font-size:13px;">No initiatives found</p>';
+            }
+
+            applyFilters();
+            renderDrilldown();
+        }
+
+        function getSelectedInitiatives() {
+            return [...document.querySelectorAll('[data-initiative]:checked')].map(el => el.dataset.initiative);
+        }
+
+        function getEpicsForInitiative(initiativeKey) {
+            if (!DASHBOARD_DATA.epics) return [];
+            return DASHBOARD_DATA.epics.filter(e => e.parent === initiativeKey);
+        }
+
+        function getIssuesForEpic(epicKey) {
+            return DASHBOARD_DATA.issues.filter(i => i.parent === epicKey);
+        }
+
+        function getFilteredIssues() {
+            const selectedTypes = [...document.querySelectorAll('[data-issue-type]:checked')].map(el => el.dataset.issueType);
+            const selectedStatuses = [...document.querySelectorAll('[data-status]:checked')].map(el => el.dataset.status);
+            const selectedInitiatives = getSelectedInitiatives();
+
+            // Build set of epics under selected initiatives
+            const selectedEpicKeys = new Set();
+            if (DASHBOARD_DATA.epics) {
+                DASHBOARD_DATA.epics.forEach(epic => {
+                    if (selectedInitiatives.includes(epic.parent)) {
+                        selectedEpicKeys.add(epic.key);
+                    }
+                });
+            }
+
+            return DASHBOARD_DATA.issues.filter(issue =>
+                selectedTypes.includes(issue.issueType) &&
+                selectedStatuses.includes(issue.statusGroup) &&
+                (selectedEpicKeys.size === 0 || selectedEpicKeys.has(issue.parent))
+            );
+        }
+
+        function calculateMetrics(issues, deadline, riskBuffer) {
+            const today = new Date();
+            const startDate = new Date(DASHBOARD_DATA.startDate);
+            const endDate = new Date(DASHBOARD_DATA.endDate);
+            const deadlineDate = new Date(deadline);
+
+            const daysElapsed = Math.max(Math.floor((today - startDate) / (1000 * 60 * 60 * 24)), 1);
+            const totalDays = Math.floor((endDate - startDate) / (1000 * 60 * 60 * 24));
+            const weeksElapsed = Math.max(daysElapsed / 7, 0.5);
+            const pctElapsed = Math.min(Math.round((daysElapsed / totalDays) * 100 * 10) / 10, 100);
+
+            // Group by project
+            const byProject = {};
+            issues.forEach(issue => {
+                if (!byProject[issue.project]) {
+                    byProject[issue.project] = { name: issue.projectName, completed: [], notCompleted: [] };
+                }
+                if (issue.isCompleted) {
+                    byProject[issue.project].completed.push(issue);
+                } else {
+                    byProject[issue.project].notCompleted.push(issue);
+                }
+            });
+
+            // Calculate pace metrics per project
+            const paceMetrics = [];
+            Object.keys(byProject).sort().forEach(projectKey => {
+                const p = byProject[projectKey];
+                const completed = p.completed.length;
+                const notCompleted = p.notCompleted.length;
+                const total = completed + notCompleted;
+                if (total === 0) return;
+
+                const remainingBugs = p.notCompleted.filter(i => i.issueType === 'Bug').length;
+                const remainingTasks = notCompleted - remainingBugs;
+                const pctComplete = Math.round((completed / total) * 100 * 10) / 10;
+                const velocity = completed / weeksElapsed;
+                const weeksToComplete = velocity > 0 ? notCompleted / velocity : Infinity;
+
+                let projectedCompletion = 'Never';
+                let daysToDeadline = null;
+                if (velocity > 0) {
+                    let projectedDays = Math.round(weeksToComplete * 7);
+                    if (riskBuffer > 0) projectedDays = Math.round(projectedDays * (1 + riskBuffer / 100));
+                    const projDate = new Date(today.getTime() + projectedDays * 24 * 60 * 60 * 1000);
+                    projectedCompletion = projDate.toISOString().split('T')[0];
+                    daysToDeadline = Math.floor((deadlineDate - projDate) / (1000 * 60 * 60 * 24));
+                }
+
+                let status = 'In Progress', statusIcon = '🔵';
+                if (notCompleted === 0) { status = 'Completed'; statusIcon = '🟢'; }
+                else if (completed === 0) { status = 'Not Started'; statusIcon = '⚪'; }
+
+                paceMetrics.push({
+                    project: projectKey, projectName: p.name, status, statusIcon,
+                    remainingTasks, remainingBugs, completed, notCompleted, total,
+                    pctComplete, velocity: Math.round(velocity * 100) / 100,
+                    weeksToComplete: weeksToComplete === Infinity ? null : Math.round(weeksToComplete * 10) / 10,
+                    projectedCompletion, daysToDeadline
+                });
+            });
+
+            // Sort by days to deadline (most negative first)
+            paceMetrics.sort((a, b) => (a.daysToDeadline ?? Infinity) - (b.daysToDeadline ?? Infinity));
+
+            return { paceMetrics, pctElapsed, weeksElapsed, byProject };
+        }
+
+        function getDaysClass(days) {
+            if (days === null) return '';
+            if (days >= 14) return 'days-great';
+            if (days >= 7) return 'days-good';
+            if (days >= 0) return 'days-ok';
+            if (days >= -7) return 'days-warning';
+            if (days >= -14) return 'days-danger';
+            return 'days-critical';
+        }
+
+        function applyFilters() {
+            const deadline = document.getElementById('deadline-input').value || DASHBOARD_DATA.endDate;
+            const riskBuffer = parseInt(document.getElementById('risk-buffer').value) || 0;
+            const hideCompleted = document.getElementById('hide-completed').checked;
+
+            const issues = getFilteredIssues();
+            const { paceMetrics, pctElapsed, byProject } = calculateMetrics(issues, deadline, riskBuffer);
+
+            // Update summary metrics
+            const totalCompleted = issues.filter(i => i.isCompleted).length;
+            const totalRemaining = issues.length - totalCompleted;
+            const pctCompleted = issues.length > 0 ? Math.round((totalCompleted / issues.length) * 100 * 10) / 10 : 0;
+            document.getElementById('total-issues').textContent = issues.length;
+            document.getElementById('completed-count').textContent = totalCompleted;
+            document.getElementById('remaining-count').textContent = totalRemaining;
+            document.getElementById('pct-completed').textContent = pctCompleted + '%';
+            document.getElementById('duration-elapsed').textContent = pctElapsed + '%';
+
+            // Render pace metrics table
+            let filteredMetrics = paceMetrics;
+            if (hideCompleted) filteredMetrics = paceMetrics.filter(m => m.notCompleted > 0);
+
+            renderPaceTable(filteredMetrics);
+            renderBurnUpChart(issues);
+            renderMonthlyTable(filteredMetrics, issues);
+            renderDrilldown();
+        }
+
+        function renderPaceTable(metrics) {
+            const thead = document.querySelector('#pace-table thead');
+            const tbody = document.querySelector('#pace-table tbody');
+
+            thead.innerHTML = '<tr><th>Project</th><th>Status</th><th>Remaining Tasks</th><th>Remaining Bugs</th><th>Done</th><th>Total Remaining</th><th>Velocity/Week</th><th>Weeks to Complete</th><th>Projected Completion</th><th>Days +/-</th></tr>';
+
+            let html = '';
+            let totals = { remainingTasks: 0, remainingBugs: 0, completed: 0, notCompleted: 0, velocity: 0 };
+
+            metrics.forEach(m => {
+                const daysDisplay = m.daysToDeadline !== null ? (m.daysToDeadline >= 0 ? '+' + m.daysToDeadline : m.daysToDeadline) : 'N/A';
+                const daysClass = getDaysClass(m.daysToDeadline);
+
+                html += `<tr>
+                    <td>${m.projectName}</td>
+                    <td>${m.statusIcon} ${m.status}</td>
+                    <td>${m.remainingTasks}</td>
+                    <td>${m.remainingBugs}</td>
+                    <td>${m.completed}</td>
+                    <td>${m.notCompleted}</td>
+                    <td>${m.velocity}</td>
+                    <td>${m.weeksToComplete ?? '∞'}</td>
+                    <td>${m.projectedCompletion}</td>
+                    <td class="${daysClass}">${daysDisplay}</td>
+                </tr>`;
+
+                totals.remainingTasks += m.remainingTasks;
+                totals.remainingBugs += m.remainingBugs;
+                totals.completed += m.completed;
+                totals.notCompleted += m.notCompleted;
+                totals.velocity += m.velocity;
+            });
+
+            // Totals row
+            const totalWeeks = totals.velocity > 0 ? Math.round((totals.notCompleted / totals.velocity) * 10) / 10 : '∞';
+            html += `<tr class="totals-row">
+                <td>📊 TOTAL</td>
+                <td>${metrics.length} projects</td>
+                <td>${totals.remainingTasks}</td>
+                <td>${totals.remainingBugs}</td>
+                <td>${totals.completed}</td>
+                <td>${totals.notCompleted}</td>
+                <td>${Math.round(totals.velocity * 100) / 100}</td>
+                <td>${totalWeeks}</td>
+                <td>-</td>
+                <td>-</td>
+            </tr>`;
+
+            tbody.innerHTML = html;
+        }
+
+        let burnUpChartInstance = null;
+
+        function renderBurnUpChart(issues) {
+            const ctx = document.getElementById('burnup-chart').getContext('2d');
+
+            // Destroy existing chart if it exists
+            if (burnUpChartInstance) {
+                burnUpChartInstance.destroy();
+            }
+
+            // Get date range - use deadline from input field
+            const startDate = new Date(DASHBOARD_DATA.startDate);
+            const deadline = new Date(document.getElementById('deadline-input').value || DASHBOARD_DATA.endDate);
+            const today = new Date();
+            const riskBuffer = parseInt(document.getElementById('risk-buffer').value) || 0;
+
+            // Generate weekly data points from start to deadline
+            // Show actual completed data up to today, then project to deadline for ideal line
+            const dataPoints = [];
+            const idealLine = [];
+            const labels = [];
+
+            // Calculate total days from start to deadline for ideal line
+            const totalDays = Math.ceil((deadline - startDate) / (1000 * 60 * 60 * 24));
+            const baseScope = issues.length;
+            // Apply risk buffer to scope - if 15% risk, scope increases by 15%
+            const adjustedScope = Math.ceil(baseScope * (1 + riskBuffer / 100));
+
+            let currentDate = new Date(startDate);
+            while (currentDate < deadline) {
+                const daysSinceStart = Math.ceil((currentDate - startDate) / (1000 * 60 * 60 * 24));
+
+                // Ideal trend: linear progression from 0 to adjustedScope over the full timeline
+                const idealValue = Math.round((adjustedScope / totalDays) * daysSinceStart);
+                idealLine.push(idealValue);
+
+                // Actual completed: only count if date is up to today
+                if (currentDate <= today) {
+                    const completedByDate = issues.filter(issue => {
+                        if (!issue.isCompleted || !issue.effectiveDate) return false;
+                        const issueDate = new Date(issue.effectiveDate);
+                        return issueDate <= currentDate;
+                    }).length;
+                    dataPoints.push(completedByDate);
+                } else {
+                    dataPoints.push(null); // No data for future dates
+                }
+
+                labels.push(currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+
+                // Move to next week
+                currentDate.setDate(currentDate.getDate() + 7);
+            }
+
+            // Always add the deadline as the final data point
+            labels.push(deadline.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+            idealLine.push(adjustedScope); // Ideal line reaches adjustedScope exactly on deadline
+            if (deadline <= today) {
+                const completedByDeadline = issues.filter(issue => {
+                    if (!issue.isCompleted || !issue.effectiveDate) return false;
+                    const issueDate = new Date(issue.effectiveDate);
+                    return issueDate <= deadline;
+                }).length;
+                dataPoints.push(completedByDeadline);
+            } else {
+                dataPoints.push(null);
+            }
+
+            // Scope line (constant at adjusted scope with risk buffer)
+            const scopeLine = labels.map(() => adjustedScope);
+
+            burnUpChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Scope (Total Work)',
+                            data: scopeLine,
+                            borderColor: '#9e9e9e',
+                            backgroundColor: 'rgba(158, 158, 158, 0.1)',
+                            borderDash: [5, 5],
+                            fill: false,
+                            tension: 0,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Ideal Trend',
+                            data: idealLine,
+                            borderColor: '#42a5f5',
+                            backgroundColor: 'rgba(66, 165, 245, 0.1)',
+                            borderDash: [3, 3],
+                            fill: false,
+                            tension: 0,
+                            pointRadius: 0
+                        },
+                        {
+                            label: 'Completed Work',
+                            data: dataPoints,
+                            borderColor: '#4caf50',
+                            backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                            fill: true,
+                            tension: 0.1,
+                            pointRadius: 3,
+                            pointBackgroundColor: '#4caf50',
+                            spanGaps: false
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: riskBuffer > 0 ? `Burn Up: Completed Work Over Time (${riskBuffer}% Risk Buffer Applied)` : 'Burn Up: Completed Work Over Time',
+                            font: { size: 16 }
+                        },
+                        legend: {
+                            position: 'bottom'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: Math.ceil(adjustedScope * 1.1),
+                            title: {
+                                display: true,
+                                text: 'Issues'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Date'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderMonthlyTable(metrics, issues) {
+            const thead = document.querySelector('#monthly-table thead');
+            const tbody = document.querySelector('#monthly-table tbody');
+
+            // Header - status columns only
+            let headerHtml = '<tr><th>Project</th><th>Not Started</th><th>Blocked</th><th>Dev In Prog</th><th>QA</th><th>Done</th><th>Not Done</th><th>Total</th><th>% Done</th></tr>';
+            thead.innerHTML = headerHtml;
+
+            // Group issues by project and track status groups
+            const projectData = {};
+            metrics.forEach(m => {
+                projectData[m.project] = {
+                    name: m.projectName,
+                    completed: m.completed,
+                    notCompleted: m.notCompleted,
+                    total: m.total,
+                    pctComplete: m.pctComplete,
+                    statusCounts: { 'Not Started': 0, 'Blocked': 0, 'Dev In Prog': 0, 'QA': 0, 'Done': 0, 'Other': 0 }
+                };
+            });
+
+            // Count status groups per project
+            issues.forEach(issue => {
+                if (projectData[issue.project]) {
+                    const sg = issue.statusGroup;
+                    if (projectData[issue.project].statusCounts[sg] !== undefined) {
+                        projectData[issue.project].statusCounts[sg]++;
+                    } else {
+                        projectData[issue.project].statusCounts['Other']++;
+                    }
+                }
+            });
+
+            // Convert to array and sort by % Done (ascending - least done first)
+            const sortedProjects = Object.keys(projectData)
+                .map(key => ({ key, ...projectData[key] }))
+                .sort((a, b) => a.pctComplete - b.pctComplete);
+
+            let html = '';
+            let totals = {
+                completed: 0,
+                notCompleted: 0,
+                total: 0,
+                statusCounts: { 'Not Started': 0, 'Blocked': 0, 'Dev In Prog': 0, 'QA': 0, 'Done': 0 }
+            };
+
+            sortedProjects.forEach(p => {
+                const pctFn = (count) => p.total > 0 ? Math.round((count / p.total) * 100) : 0;
+
+                html += `<tr><td>${p.name}</td>`;
+                html += `<td class="col-not-started">${p.statusCounts['Not Started']} (${pctFn(p.statusCounts['Not Started'])}%)</td>`;
+                html += `<td class="col-blocked">${p.statusCounts['Blocked']} (${pctFn(p.statusCounts['Blocked'])}%)</td>`;
+                html += `<td class="col-dev-in-prog">${p.statusCounts['Dev In Prog']} (${pctFn(p.statusCounts['Dev In Prog'])}%)</td>`;
+                html += `<td class="col-qa">${p.statusCounts['QA']} (${pctFn(p.statusCounts['QA'])}%)</td>`;
+                html += `<td class="col-done">${p.completed} (${pctFn(p.completed)}%)</td>`;
+                html += `<td class="col-not-done">${p.notCompleted} (${pctFn(p.notCompleted)}%)</td>`;
+                html += `<td>${p.total}</td><td>${p.pctComplete}%</td></tr>`;
+
+                totals.statusCounts['Not Started'] += p.statusCounts['Not Started'];
+                totals.statusCounts['Blocked'] += p.statusCounts['Blocked'];
+                totals.statusCounts['Dev In Prog'] += p.statusCounts['Dev In Prog'];
+                totals.statusCounts['QA'] += p.statusCounts['QA'];
+                totals.completed += p.completed;
+                totals.notCompleted += p.notCompleted;
+                totals.total += p.total;
+            });
+
+            // Totals row with percentages
+            const totalPct = totals.total > 0 ? Math.round((totals.completed / totals.total) * 100 * 10) / 10 : 0;
+            const tPctFn = (count) => totals.total > 0 ? Math.round((count / totals.total) * 100) : 0;
+
+            html += `<tr class="totals-row"><td>📊 TOTAL</td>`;
+            html += `<td>${totals.statusCounts['Not Started']} (${tPctFn(totals.statusCounts['Not Started'])}%)</td>`;
+            html += `<td>${totals.statusCounts['Blocked']} (${tPctFn(totals.statusCounts['Blocked'])}%)</td>`;
+            html += `<td>${totals.statusCounts['Dev In Prog']} (${tPctFn(totals.statusCounts['Dev In Prog'])}%)</td>`;
+            html += `<td>${totals.statusCounts['QA']} (${tPctFn(totals.statusCounts['QA'])}%)</td>`;
+            html += `<td>${totals.completed} (${tPctFn(totals.completed)}%)</td>`;
+            html += `<td>${totals.notCompleted} (${tPctFn(totals.notCompleted)}%)</td>`;
+            html += `<td>${totals.total}</td><td>${totalPct}%</td></tr>`;
+
+            tbody.innerHTML = html;
+        }
+
+        function isInitiativeComplete(initiativeKey) {
+            const epics = getEpicsForInitiative(initiativeKey);
+            if (epics.length === 0) return false;
+
+            for (const epic of epics) {
+                const issues = getIssuesForEpic(epic.key);
+                for (const issue of issues) {
+                    if (!issue.isCompleted) return false;
+                }
+            }
+            return true;
+        }
+
+        function getStatusClass(statusGroup) {
+            if (statusGroup === 'Done') return 'status-done';
+            if (statusGroup === 'Dev In Prog' || statusGroup === 'QA') return 'status-inprog';
+            return 'status-notstarted';
+        }
+
+        function renderDrilldown() {
+            const container = document.getElementById('drilldown-container');
+            const selectedInitiatives = getSelectedInitiatives();
+            const selectedTypes = [...document.querySelectorAll('[data-issue-type]:checked')].map(el => el.dataset.issueType);
+            const selectedStatuses = [...document.querySelectorAll('[data-status]:checked')].map(el => el.dataset.status);
+
+            if (!DASHBOARD_DATA.initiatives || DASHBOARD_DATA.initiatives.length === 0) {
+                container.innerHTML = '<p style="color:#666;">No initiatives found</p>';
+                return;
+            }
+
+            const jiraUrl = 'https://collectors.atlassian.net/browse/';
+            const miscKeys = ['CPF-369', 'CPF-51', 'CPF-10'];
+
+            // Categorize initiatives
+            const categories = {
+                valueStreams: [],
+                misc: [],
+                launches: [],
+                completed: []
+            };
+
+            DASHBOARD_DATA.initiatives.forEach(init => {
+                if (!selectedInitiatives.includes(init.key)) return;
+
+                const isComplete = isInitiativeComplete(init.key);
+
+                // Completed initiatives go to bottom regardless of type
+                if (isComplete) {
+                    categories.completed.push(init);
+                } else if (init.summary && init.summary.match(/^VS\d/i)) {
+                    categories.valueStreams.push(init);
+                } else if (miscKeys.includes(init.key)) {
+                    categories.misc.push(init);
+                } else if (init.summary && init.summary.toLowerCase().includes('launch')) {
+                    categories.launches.push(init);
+                } else {
+                    // Default to misc for anything else
+                    categories.misc.push(init);
+                }
+            });
+
+            // Sort Value Streams by VS number (VS1, VS2, etc.)
+            categories.valueStreams.sort((a, b) => {
+                const aMatch = a.summary.match(/^VS(\d+)/i);
+                const bMatch = b.summary.match(/^VS(\d+)/i);
+                const aNum = aMatch ? parseInt(aMatch[1]) : 999;
+                const bNum = bMatch ? parseInt(bMatch[1]) : 999;
+                return aNum - bNum;
+            });
+
+            let html = '';
+
+            // Helper function to render a single initiative
+            function renderInitiative(init) {
+                const isComplete = isInitiativeComplete(init.key);
+                const completeClass = isComplete ? 'completed' : '';
+
+                let initHtml = `<div class="drilldown-item">
+                    <div class="drilldown-initiative ${completeClass}" onclick="toggleDrilldown('init-${init.key}')">
+                        <span class="expand-icon">▶</span>
+                        <a href="${jiraUrl}${init.key}" target="_blank" onclick="event.stopPropagation()">${init.key}</a>: ${init.summary}
+                        ${isComplete ? '✅' : ''}
+                    </div>
+                    <div class="drilldown-children" id="init-${init.key}">`;
+
+                const epics = getEpicsForInitiative(init.key);
+                epics.forEach(epic => {
+                    const epicIssues = getIssuesForEpic(epic.key).filter(i =>
+                        selectedTypes.includes(i.issueType) && selectedStatuses.includes(i.statusGroup)
+                    );
+                    const epicComplete = epicIssues.length > 0 && epicIssues.every(i => i.isCompleted);
+                    const epicCompleteClass = epicComplete ? 'completed' : '';
+
+                    initHtml += `<div class="drilldown-epic ${epicCompleteClass}" onclick="toggleDrilldown('epic-${epic.key}')">
+                        <span class="expand-icon">▶</span>
+                        <a href="${jiraUrl}${epic.key}" target="_blank" onclick="event.stopPropagation()">${epic.key}</a>: ${epic.summary}
+                        (${epicIssues.filter(i => i.isCompleted).length}/${epicIssues.length})
+                        ${epicComplete ? '✅' : ''}
+                    </div>
+                    <div class="drilldown-children" id="epic-${epic.key}">`;
+
+                    epicIssues.forEach(issue => {
+                        const statusClass = getStatusClass(issue.statusGroup);
+                        initHtml += `<div class="drilldown-ticket">
+                            <a href="${jiraUrl}${issue.key}" target="_blank">${issue.key}</a>: ${issue.summary}
+                            <span class="ticket-status ${statusClass}">${issue.status}</span>
+                        </div>`;
+                    });
+
+                    initHtml += `</div>`;
+                });
+
+                initHtml += `</div></div>`;
+                return initHtml;
+            }
+
+            // Render each section with header
+            if (categories.valueStreams.length > 0) {
+                html += `<div class="drilldown-section">
+                    <h3 class="drilldown-section-header">🎯 Value Streams</h3>`;
+                categories.valueStreams.forEach(init => { html += renderInitiative(init); });
+                html += `</div>`;
+            }
+
+            if (categories.launches.length > 0) {
+                html += `<div class="drilldown-section">
+                    <h3 class="drilldown-section-header">🚀 Launches</h3>`;
+                categories.launches.forEach(init => { html += renderInitiative(init); });
+                html += `</div>`;
+            }
+
+            if (categories.misc.length > 0) {
+                html += `<div class="drilldown-section">
+                    <h3 class="drilldown-section-header">📋 Misc</h3>`;
+                categories.misc.forEach(init => { html += renderInitiative(init); });
+                html += `</div>`;
+            }
+
+            if (categories.completed.length > 0) {
+                html += `<div class="drilldown-section">
+                    <h3 class="drilldown-section-header">✅ Completed</h3>`;
+                categories.completed.forEach(init => { html += renderInitiative(init); });
+                html += `</div>`;
+            }
+
+            container.innerHTML = html || '<p style="color:#666;">No initiatives match the current filters</p>';
+        }
+
+        function toggleDrilldown(id) {
+            const el = document.getElementById(id);
+            const parent = el.previousElementSibling;
+            const icon = parent.querySelector('.expand-icon');
+
+            if (el.classList.contains('expanded')) {
+                el.classList.remove('expanded');
+                icon.textContent = '▶';
+            } else {
+                el.classList.add('expanded');
+                icon.textContent = '▼';
+            }
+        }
+    </script>
+</body>
+</html>
