@@ -7563,20 +7563,6 @@
       "parent": "SHIP-69"
     },
     {
-      "key": "PCGSOPS-1545",
-      "summary": "Original OverRidePrice and OverRideGP flags not being respected at V2 in Grading System",
-      "status": "In progress",
-      "statusGroup": "Dev In Prog",
-      "project": "PCGSOPS",
-      "projectName": "PCGSOPS",
-      "issueType": "Bug",
-      "assignee": "bgarcia3",
-      "isCompleted": false,
-      "effectiveDate": "2026-05-07",
-      "weekLabel": null,
-      "parent": "PCGSOPS-876"
-    },
-    {
       "key": "SHIP-164",
       "summary": "CORE is having Account hold and even then it's getting shipped via Proship",
       "status": "Ready for Prod",
@@ -8795,20 +8781,6 @@
       "parent": "CPF-379"
     },
     {
-      "key": "NS-1920",
-      "summary": "WATA | IF is not getting created after the order is shipped in Proship ",
-      "status": "Ready for QA",
-      "statusGroup": "QA",
-      "project": "NS",
-      "projectName": "NetSuite",
-      "issueType": "Bug",
-      "assignee": "Venkata Harika Kaki",
-      "isCompleted": false,
-      "effectiveDate": "2026-05-11",
-      "weekLabel": null,
-      "parent": "CPF-379"
-    },
-    {
       "key": "CORE-1946",
       "summary": "WATA | Orders which are removed from PROBLEM_ORDER holds are not removing the exisiting INSUFFICIENT_PAYMENT Accounting holds",
       "status": "To Do",
@@ -8991,20 +8963,6 @@
       "parent": "CORE-1029"
     },
     {
-      "key": "OP-4421",
-      "summary": "Ebay:  Import $0.00 Shipping Fees",
-      "status": "In progress",
-      "statusGroup": "Dev In Prog",
-      "project": "OP",
-      "projectName": "Operations Platform",
-      "issueType": "Bug",
-      "assignee": "Sun Shin",
-      "isCompleted": false,
-      "effectiveDate": "2026-05-11",
-      "weekLabel": null,
-      "parent": "OP-4255"
-    },
-    {
       "key": "OP-4394",
       "summary": "Migrate Ship Events for NS",
       "status": "PM Review",
@@ -9045,20 +9003,6 @@
       "effectiveDate": "2026-05-11",
       "weekLabel": null,
       "parent": "OP-4255"
-    },
-    {
-      "key": "SHIP-22",
-      "summary": "API No V2 Date: Allows user to ship but should be a hard stop and provide user message.",
-      "status": "In QA",
-      "statusGroup": "QA",
-      "project": "SHIP",
-      "projectName": "Shipping",
-      "issueType": "Bug",
-      "assignee": "Kyle Marino",
-      "isCompleted": false,
-      "effectiveDate": "2026-05-11",
-      "weekLabel": null,
-      "parent": "SHIP-116"
     },
     {
       "key": "ESB-2088",
@@ -9103,20 +9047,6 @@
       "parent": "CORE-1579"
     },
     {
-      "key": "NS-1925",
-      "summary": "Refund lines are not populated in Salesforce refund request screen, causing refund amount to remain USD 0.00",
-      "status": "To Do",
-      "statusGroup": "Not Started",
-      "project": "NS",
-      "projectName": "NetSuite",
-      "issueType": "Bug",
-      "assignee": "tpias",
-      "isCompleted": false,
-      "effectiveDate": "2026-05-11",
-      "weekLabel": null,
-      "parent": "CPF-379"
-    },
-    {
       "key": "NS-1919",
       "summary": "Membership Order Customer Deposits Payment Method Incorrect",
       "status": "In progress",
@@ -9159,29 +9089,113 @@
       "parent": "PCGSOPS-879"
     },
     {
-      "key": "NS-1924",
-      "summary": "Money Voucher is not mapping/causing SO's to fail to create",
-      "status": "To Do",
-      "statusGroup": "Not Started",
+      "key": "SHIP-22",
+      "summary": "API No V2 Date: Allows user to ship but should be a hard stop and provide user message.",
+      "status": "Blocked",
+      "statusGroup": "Blocked",
+      "project": "SHIP",
+      "projectName": "Shipping",
+      "issueType": "Bug",
+      "assignee": "Kyle Marino",
+      "isCompleted": false,
+      "effectiveDate": "2026-05-11",
+      "weekLabel": null,
+      "parent": "SHIP-116"
+    },
+    {
+      "key": "PCGSOPS-1545",
+      "summary": "Original OverRidePrice and OverRideGP flags not being respected at V2 in Grading System",
+      "status": "In progress",
+      "statusGroup": "Dev In Prog",
+      "project": "PCGSOPS",
+      "projectName": "PCGSOPS",
+      "issueType": "Bug",
+      "assignee": "Unassigned",
+      "isCompleted": false,
+      "effectiveDate": "2026-05-11",
+      "weekLabel": null,
+      "parent": "PCGSOPS-876"
+    },
+    {
+      "key": "OP-4421",
+      "summary": "Ebay:  Import $0.00 Shipping Fees",
+      "status": "In progress",
+      "statusGroup": "Dev In Prog",
+      "project": "OP",
+      "projectName": "Operations Platform",
+      "issueType": "Bug",
+      "assignee": "Sun Shin",
+      "isCompleted": false,
+      "effectiveDate": "2026-05-11",
+      "weekLabel": null,
+      "parent": "OP-4255"
+    },
+    {
+      "key": "CORE-1947",
+      "summary": "Void fulfillment data mismatch for order 23093486 externalId IF-PCGSBANKNOTEGO-23093486H. Field: 'trandate', sent: '05/10/2026', on file: '05/11/2026'",
+      "status": "Ready for Prod Release",
+      "statusGroup": "Done",
+      "project": "CORE",
+      "projectName": "CORE Integrations",
+      "issueType": "Bug",
+      "assignee": "Arko Dutta",
+      "isCompleted": true,
+      "effectiveDate": "2026-05-11",
+      "weekLabel": null,
+      "parent": "CPF-379"
+    },
+    {
+      "key": "NS-1925",
+      "summary": "Refund lines are not populated in Salesforce refund request screen, causing refund amount to remain USD 0.00",
+      "status": "In progress",
+      "statusGroup": "Dev In Prog",
       "project": "NS",
       "projectName": "NetSuite",
       "issueType": "Bug",
-      "assignee": "Unassigned",
+      "assignee": "tpias",
       "isCompleted": false,
       "effectiveDate": "2026-05-11",
       "weekLabel": null,
       "parent": "CPF-379"
     },
     {
-      "key": "CORE-1947",
-      "summary": "Void fulfillment data mismatch for order 23093486 externalId IF-PCGSBANKNOTEGO-23093486H. Field: 'trandate', sent: '05/10/2026', on file: '05/11/2026'",
-      "status": "Ready for QA",
-      "statusGroup": "QA",
+      "key": "NS-1928",
+      "summary": "Refund via Stripe is not closing the RMA",
+      "status": "To Do",
+      "statusGroup": "Not Started",
+      "project": "NS",
+      "projectName": "NetSuite",
+      "issueType": "Bug",
+      "assignee": "tpias",
+      "isCompleted": false,
+      "effectiveDate": "2026-05-11",
+      "weekLabel": null,
+      "parent": "NS-357"
+    },
+    {
+      "key": "CORE-1950",
+      "summary": "Money Voucher is not mapping/causing SO's to fail to create",
+      "status": "To Do",
+      "statusGroup": "Not Started",
       "project": "CORE",
       "projectName": "CORE Integrations",
       "issueType": "Bug",
-      "assignee": "Kristie Gallant",
+      "assignee": "Andros Mendoza",
       "isCompleted": false,
+      "effectiveDate": "2026-05-11",
+      "weekLabel": null,
+      "parent": "CPF-379"
+    },
+    {
+      "key": "NS-1920",
+      "summary": "WATA | IF is not getting created after the order is shipped in Proship ",
+      "status": "DONE",
+      "statusGroup": "Done",
+      "project": "NS",
+      "projectName": "NetSuite",
+      "issueType": "Bug",
+      "assignee": "Venkata Harika Kaki",
+      "isCompleted": true,
       "effectiveDate": "2026-05-11",
       "weekLabel": null,
       "parent": "CPF-379"
@@ -16109,7 +16123,7 @@
     {
       "key": "CORE-679",
       "summary": "VS5 - Invoicing - PSA Inbound Shipping Label",
-      "status": "In progress",
+      "status": "Ready for Prod Release",
       "parent": "CPF-30"
     },
     {
@@ -16327,7 +16341,7 @@
   ],
   "startDate": "2026-01-07",
   "endDate": "2026-03-31",
-  "lastUpdated": "2026-05-11T19:09:27Z"
+  "lastUpdated": "2026-05-11T20:53:15Z"
 };
 
         // Password protection
