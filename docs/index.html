@@ -7353,20 +7353,6 @@
       "parent": "PCGS-3643"
     },
     {
-      "key": "OP-4451",
-      "summary": "NS: Add new WPF \"V2\" PCGS UI",
-      "status": "PM Review",
-      "statusGroup": "Done",
-      "project": "OP",
-      "projectName": "Operations Platform",
-      "issueType": "Story",
-      "assignee": "Unassigned",
-      "isCompleted": true,
-      "effectiveDate": "2026-05-27",
-      "weekLabel": null,
-      "parent": "OP-4255"
-    },
-    {
       "key": "CORE-1995",
       "summary": "Update user-consumer SF prod creds to match the ones used in SF platform event consumer",
       "status": "To Do",
@@ -7619,34 +7605,6 @@
       "parent": "CORE-1029"
     },
     {
-      "key": "OP-4333",
-      "summary": "Global:  Shipping Adjustments UI",
-      "status": "In QA",
-      "statusGroup": "QA",
-      "project": "OP",
-      "projectName": "Operations Platform",
-      "issueType": "Task",
-      "assignee": "Touheed Aslam",
-      "isCompleted": false,
-      "effectiveDate": "2026-05-28",
-      "weekLabel": null,
-      "parent": "OP-4255"
-    },
-    {
-      "key": "OP-4503",
-      "summary": "Order Maintenance: Add Server Save Validation to prevent saving an order after V2.",
-      "status": "PM Review",
-      "statusGroup": "Done",
-      "project": "OP",
-      "projectName": "Operations Platform",
-      "issueType": "Task",
-      "assignee": "Lisa Shelby",
-      "isCompleted": true,
-      "effectiveDate": "2026-05-28",
-      "weekLabel": null,
-      "parent": "OP-4255"
-    },
-    {
       "key": "DP-3490",
       "summary": "1 Time Migration File Collectors Club Vouchers",
       "status": "Backlog",
@@ -7659,6 +7617,34 @@
       "effectiveDate": "2026-05-28",
       "weekLabel": null,
       "parent": "DP-3308"
+    },
+    {
+      "key": "CORE-2005",
+      "summary": "Return Shipping Address: Contact being dropped/Not sent to NS",
+      "status": "In progress",
+      "statusGroup": "Dev In Prog",
+      "project": "CORE",
+      "projectName": "CORE Integrations",
+      "issueType": "Bug",
+      "assignee": "Jose Saul Chavez",
+      "isCompleted": false,
+      "effectiveDate": "2026-05-28",
+      "weekLabel": null,
+      "parent": "CPF-379"
+    },
+    {
+      "key": "OP-4333",
+      "summary": "Global:  Shipping Adjustments UI",
+      "status": "PM Review",
+      "statusGroup": "Done",
+      "project": "OP",
+      "projectName": "Operations Platform",
+      "issueType": "Task",
+      "assignee": "Lisa Shelby",
+      "isCompleted": true,
+      "effectiveDate": "2026-05-28",
+      "weekLabel": null,
+      "parent": "OP-4255"
     },
     {
       "key": "OP-4521",
@@ -7675,18 +7661,102 @@
       "parent": "OP-4255"
     },
     {
-      "key": "CORE-2005",
-      "summary": "Return Shipping Address: Contact being dropped/Not sent to NS",
-      "status": "In progress",
-      "statusGroup": "Dev In Prog",
-      "project": "CORE",
-      "projectName": "CORE Integrations",
+      "key": "OP-4528",
+      "summary": "Shipping Adjustments vue : All dept(expect Funko as NA) Country field Error message\"Error saving: Request failed with status code 500\"  is not informative like in case of wpf \"The country code on customer record is invalid\"",
+      "status": "In QA",
+      "statusGroup": "QA",
+      "project": "OP",
+      "projectName": "Operations Platform",
       "issueType": "Bug",
-      "assignee": "Jose Saul Chavez",
+      "assignee": "Touheed Aslam",
       "isCompleted": false,
       "effectiveDate": "2026-05-28",
       "weekLabel": null,
-      "parent": "CPF-379"
+      "parent": "OP-4255"
+    },
+    {
+      "key": "OP-4529",
+      "summary": "Shipping Adjustments vue : All dept(expect Funko as NA) : validation for zipcode input feild Ex.  more than 5 digit for US not allowed,  should allow only digit but alphanumeric charcter are allowed  (wpf the validation is in place)",
+      "status": "In QA",
+      "statusGroup": "QA",
+      "project": "OP",
+      "projectName": "Operations Platform",
+      "issueType": "Bug",
+      "assignee": "Touheed Aslam",
+      "isCompleted": false,
+      "effectiveDate": "2026-05-28",
+      "weekLabel": null,
+      "parent": "OP-4255"
+    },
+    {
+      "key": "OP-4530",
+      "summary": "Auto undo v2 for PCGS , Comics and WATA, Banknotes (expect Funko as NA)  is not triggered, not showing up in order maintaince  ( working only for PSA)",
+      "status": "In QA",
+      "statusGroup": "QA",
+      "project": "OP",
+      "projectName": "Operations Platform",
+      "issueType": "Bug",
+      "assignee": "Touheed Aslam",
+      "isCompleted": false,
+      "effectiveDate": "2026-05-28",
+      "weekLabel": null,
+      "parent": "OP-4255"
+    },
+    {
+      "key": "OP-4531",
+      "summary": "Shipping Adjustments  vue : Banknotes  valid order 's data is not displayed in shipping adjustments screen ( previously working)",
+      "status": "In QA",
+      "statusGroup": "QA",
+      "project": "OP",
+      "projectName": "Operations Platform",
+      "issueType": "Bug",
+      "assignee": "Touheed Aslam",
+      "isCompleted": false,
+      "effectiveDate": "2026-05-28",
+      "weekLabel": null,
+      "parent": "OP-4255"
+    },
+    {
+      "key": "OP-4532",
+      "summary": "Shipping Adjustments vue : Update in Shipping Adjusments vue data, the email id and phone number is removed from order maintenance",
+      "status": "In QA",
+      "statusGroup": "QA",
+      "project": "OP",
+      "projectName": "Operations Platform",
+      "issueType": "Bug",
+      "assignee": "Touheed Aslam",
+      "isCompleted": false,
+      "effectiveDate": "2026-05-28",
+      "weekLabel": null,
+      "parent": "OP-4255"
+    },
+    {
+      "key": "OP-4451",
+      "summary": "NS: Add new WPF \"V2\" PCGS UI",
+      "status": "DONE",
+      "statusGroup": "Done",
+      "project": "OP",
+      "projectName": "Operations Platform",
+      "issueType": "Story",
+      "assignee": "Unassigned",
+      "isCompleted": true,
+      "effectiveDate": "2026-05-28",
+      "weekLabel": null,
+      "parent": "OP-4255"
+    },
+    {
+      "key": "OP-4503",
+      "summary": "Order Maintenance: Add Server Save Validation to prevent saving an order after V2.",
+      "status": "DONE",
+      "statusGroup": "Done",
+      "project": "OP",
+      "projectName": "Operations Platform",
+      "issueType": "Task",
+      "assignee": "Lisa Shelby",
+      "isCompleted": true,
+      "effectiveDate": "2026-05-28",
+      "weekLabel": null,
+      "parent": "OP-4255"
     },
     {
       "key": "OP-4518",
@@ -17725,7 +17795,7 @@
   ],
   "startDate": "2026-01-07",
   "endDate": "2026-03-31",
-  "lastUpdated": "2026-05-28T21:29:32Z"
+  "lastUpdated": "2026-05-28T22:53:52Z"
 };
 
         // Password protection
